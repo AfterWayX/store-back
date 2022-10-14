@@ -23,11 +23,9 @@ import {
     category?: string[];
 
     @ApiPropertyOptional({
-        type: [String],
+        type: [Number],
         example: [0, 320],
     })
-    @Min(0)
-    @Max(500)
     @IsOptional()
     price?: number[];
 

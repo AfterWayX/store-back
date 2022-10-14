@@ -7,8 +7,7 @@ import { QueryDto } from '../repositories/QueryDto';
 @Injectable()
 export class ProductsService {
     constructor(private readonly productRepository: ProductRepository) {}
-    async getProducts(query: QueryDto): Promise<Product[]> {   
-        console.log(query)
+    async getProducts(query: QueryDto): Promise<Product[]> {
         return this.productRepository.getProducts(query); 
     }
 }

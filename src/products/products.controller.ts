@@ -12,7 +12,6 @@ export class ProductsController {
 
   @Get('')
   getProducts(@Query() query:QueryDto): Promise<Product[]> {
-    console.log(query)
     return this.productsService.getProducts(query);
   }
 }

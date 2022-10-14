@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import Product from '../entities/product.entity';
 import { QueryDto } from './QueryDto';
 import { isArray } from 'class-validator';
+import { FilterFieldsI } from '../products/interfaces/FilterFields.interface';
 
 @Injectable()
 export class ProductRepository {
@@ -12,7 +13,7 @@ export class ProductRepository {
     @InjectRepository(Product) private productRepository: Repository<Product>,
   ) {}
 
-  async getProducts(query?: QueryDto): Promise<Product[]> {
+  async products(query?: QueryDto): Promise<Product[]> {
     const queryColors = [];
     const queryCategories = [];
     const queryNumbers = [];
@@ -56,6 +57,38 @@ export class ProductRepository {
     });
 
     return response;
+  }
+
+  async filterFields(): Promise<FilterFieldsI> {
+    const uniqueColors = await this.productRepository
+      .createQueryBuilder('product')
+      .select('product.color', 'color')
+      .distinct(true)
+      .getRawMany();
+
+    const uniqueCategories = await this.productRepository
+      .createQueryBuilder('product')
+      .select('product.category', 'category')
+      .distinct(true)
+      .getRawMany();
+    
+    const lowestPrice = await this.productRepository.findOne({
+      order: {
+        price: 'ASC'
+      }
+    })
+
+    const biggestPrice = await this.productRepository.findOne({
+      order: {
+        price: 'DESC'
+      }
+    })
+
+    return {
+      color: uniqueColors,
+      category: uniqueCategories,
+      priceRange: [lowestPrice.price, biggestPrice.price],
+    };
   }
 
   async uploadMock(product) {

@@ -36,7 +36,6 @@ import {
     @IsNumber()
     @Transform(({ value }) => +value)
     @IsOptional()
-    @Max(500)
     skip?: number;
   
     @ApiPropertyOptional({

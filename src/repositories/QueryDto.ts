@@ -23,11 +23,11 @@ import {
     category?: string[];
 
     @ApiPropertyOptional({
-        type: [Number],
-        example: [0, 320],
+        type: [String],
+        example: ['0', '320'],
     })
     @IsOptional()
-    price?: number[];
+    price?: string[];
 
     @ApiPropertyOptional({
       type: Number,

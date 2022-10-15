@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { In, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
+import { Between, In, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import Product from '../entities/product.entity';
 import { QueryDto } from './QueryDto';
 import { isArray } from 'class-validator';
 import { FilterFieldsI } from '../products/interfaces/FilterFields.interface';
+import { Products } from '../products/interfaces/Products.interface';
 
 @Injectable()
 export class ProductRepository {
@@ -13,7 +14,7 @@ export class ProductRepository {
     @InjectRepository(Product) private productRepository: Repository<Product>,
   ) {}
 
-  async products(query?: QueryDto): Promise<Product[]> {
+  async products(query?: QueryDto): Promise<Products> {
     const queryColors = [];
     const queryCategories = [];
     const queryNumbers = [];
@@ -35,7 +36,7 @@ export class ProductRepository {
 
     if (query.price) 
       if (isArray(query.price)) {
-        const sortedPrice = query.price.sort((a, b) => a - b);
+        const sortedPrice = query.price.sort((a, b) => +a - +b);
         queryNumbers.push(sortedPrice[0] || 0);
         queryNumbers.push(sortedPrice[1] || 500);
       } else {
@@ -46,8 +47,8 @@ export class ProductRepository {
     const whereOptions = {
       ...(query.color && { color: In(queryColors) }),
       ...(query.category && { category: In(queryCategories) }),
-      ...(query.price && { price: LessThanOrEqual(queryNumbers[1]) }),
-      ...(query.price && { price: MoreThanOrEqual(queryNumbers[0]) }),
+      ...(query.price && { price: Between(+queryNumbers[0], +queryNumbers[1]) }),
+      // ...(query.price && { price: MoreThanOrEqual(queryNumbers[0]) }),
     };
 
     const response = await this.productRepository.find({
@@ -55,8 +56,9 @@ export class ProductRepository {
       skip: query.skip,
       take: query.limit,
     });
+    const count = await this.productRepository.count(whereOptions);
 
-    return response;
+    return {data: response, count: count};
   }
 
   async filterFields(): Promise<FilterFieldsI> {
